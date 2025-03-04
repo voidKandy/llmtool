@@ -1,16 +1,10 @@
 // https://developers.google.com/identity/protocols/oauth2/native-app
 use super::{AppState, HttpError, HttpSuccess};
 use crate::handlers::ErrorResponse;
-use axum::{
-    extract::{Request, State},
-    http::{self},
-    middleware::Next,
-    response::{Redirect, Response},
-};
+use axum::{extract::Request, middleware::Next, response::Response};
 use axum_extra::{
     extract::cookie::{Cookie, CookieJar},
     headers::authorization::{Authorization, Bearer},
-    // response::{IntoResponse, Redirect},
     TypedHeader,
 };
 use serde::{Deserialize, Serialize};

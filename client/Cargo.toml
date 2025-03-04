@@ -1,5 +1,5 @@
 [package]
-name = "llmtool_client"
+name = "client"
 version = "0.1.0"
 authors = ["voidKandy <voidkandy@gmail.com>"]
 edition = "2021"
