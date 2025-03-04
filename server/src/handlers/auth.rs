@@ -1,3 +1,5 @@
+use std::string;
+
 // https://developers.google.com/identity/protocols/oauth2/native-app
 use super::{AppState, HttpError, HttpSuccess};
 use crate::handlers::ErrorResponse;
@@ -35,13 +37,16 @@ pub async fn auth_middleware(
             // insert the current user into a request extension so the handler can
             // extract it
             req.extensions_mut().insert(user);
-            Ok(next.run(req).await)
-        } else {
-            Err(HttpError::Unauthorised)
+            return Ok(next.run(req).await);
         }
-    } else {
-        Err(HttpError::Unauthorised)
+        return Err(HttpError::Unauthorised);
     }
+    if req.uri() == "/logout" {
+        return Err(HttpError::BadRequest(ErrorResponse {
+            error: format!("already logged out"),
+        }));
+    }
+    Err(HttpError::Unauthorised)
 }
 
 pub async fn login(
@@ -50,21 +55,27 @@ pub async fn login(
 ) -> Result<(CookieJar, HttpSuccess), HttpError> {
     if let Some(session_id) = authorize_current_user(auth.token()).await {
         if let Some(user) = current_user(&session_id).await {
-            Ok((
+            return Ok((
                 jar.add(Cookie::new("session_id", session_id)),
                 HttpSuccess::UserData(user),
-            ))
-        } else {
-            Err(HttpError::Unauthorised)
+            ));
         }
-    } else {
-        Err(HttpError::Unauthorised)
+        return Err(HttpError::Unauthorised);
     }
+    Err(HttpError::Unauthorised)
 }
 
 pub async fn logout(jar: CookieJar) -> Result<(CookieJar, HttpSuccess), HttpError> {
-    // remove session from cache/db and remove cookie
-    Ok((jar.remove(Cookie::from("session_id")), HttpSuccess::Ok))
+    // remove session from cache/db and remove cookie, use refresh token
+    if let Some(session_id) = jar
+        .get("session_id")
+        .map(|cookie| cookie.value().to_owned())
+    {
+        return Ok((jar.remove(Cookie::from("session_id")), HttpSuccess::Ok));
+    }
+    Err(HttpError::BadRequest(ErrorResponse {
+        error: format!("already logged out"),
+    }))
 }
 
 // helper functions
@@ -75,7 +86,7 @@ async fn authorize_current_user(auth_token: &str) -> Option<String> {
 }
 
 async fn current_user(session_id: &str) -> Option<CurrentUser> {
-    // get current user from db with cookie: session_id
+    // get current user from db/cache with cookie: session_id
     Some(CurrentUser {
         id: format!("12k3h12l3h"),
         username: format!("benleem"),
