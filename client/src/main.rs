@@ -14,6 +14,9 @@ fn main() {
 fn App() -> Element {
     let mock_notes = generate_mock_notes();
     rsx! {
+        document::Script{src: asset!("/assets/bertWorker.js"), type: Some("module".to_string()) }
+        document::Script{src: asset!("/assets/utils.js"), type: Some("module".to_string()) }
+        document::Script{src: asset!("/assets/test.js"), type: Some("module".to_string()) }
         // Hero {}
         NotesComponent{notes: mock_notes }
         // document::Link { rel: "icon", href: FAVICON }
