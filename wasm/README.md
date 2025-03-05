@@ -15,3 +15,5 @@ Then open `http://localhost:8000/lib-example.html` in your browser.
 
 #### Overview
 While we haven't yet figured out how we are going to be deploying these wasm models through our dioxus app, I think creating web components that interract with webworkers would be our best bet. Currently `bertWorker.js` defines a web worker that handles any stuff regarding the model actually running inference.
+
+[this was a very helpful resource for this](https://github.com/huggingface/candle/blob/main/candle-wasm-examples/bert)
