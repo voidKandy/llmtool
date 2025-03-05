@@ -4444,9 +4444,22 @@ version = "0.1.0"
 name = "llmtool_client"
 version = "0.1.0"
 dependencies = [
+ "candle-core",
+ "candle-nn",
+ "candle-transformers",
  "chrono",
+ "console_error_panic_hook",
  "dioxus",
+ "getrandom 0.2.15",
+ "gloo",
+ "js-sys",
+ "reqwest",
+ "serde",
+ "serde-wasm-bindgen 0.6.5",
+ "serde_json",
+ "tokenizers 0.19.1",
  "tracing",
+ "wasm-bindgen",
 ]
 
 [[package]]

@@ -10,6 +10,7 @@ extern "C" {
     // `log(..)`
     #[wasm_bindgen(js_namespace = console)]
     pub fn log(s: &str);
+    pub fn alert(s: &str);
 }
 
 #[macro_export]
@@ -17,4 +18,9 @@ macro_rules! console_log {
     // Note that this is using the `log` function imported above during
     // `bare_bones`
     ($($t:tt)*) => ($crate::log(&format_args!($($t)*).to_string()))
+}
+
+#[wasm_bindgen]
+pub fn greet(name: &str) {
+    alert(&format!("Hello, {}!", name));
 }

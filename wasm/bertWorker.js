@@ -13,6 +13,7 @@ async function fetchArrayBuffer(url) {
   cache.put(url, res.clone());
   return new Uint8Array(await res.arrayBuffer());
 }
+
 class Bert {
   static instance = {};
 

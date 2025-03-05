@@ -1,0 +1,36 @@
+<html>
+<!DOCTYPE html>
+
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  <title>WASM TEST</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module">
+    import init, {greet} from "./pkg/wasm.js";
+    init().then(() => {
+      greet("WebAssembly");
+    });
+  </script>
+  <!-- <script type="module"> -->
+
+  <!-- async function loadWasm() { -->
+  <!-- const response = await fetch("build/model.wasm"); -->
+  <!-- const bytes = await response.arrayBuffer(); -->
+  <!-- const {instance} = await WebAssembly.instantiate(bytes); -->
+
+  <!-- // Assuming `example.wasm` exports a function called `add` -->
+  <!-- const result = instance.exports.add(5, 3); -->
+  <!-- document.getElementById("output").textContent = result; -->
+  <!-- } -->
+
+  <!-- loadWasm().catch(console.error); -->
+
+
+
+  <!-- </script> -->
+
+<body>
+</body>
+
+</html>
