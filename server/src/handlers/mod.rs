@@ -1,4 +1,4 @@
-use crate::api::Api;
+use crate::api::{Api, Notes};
 use crate::MainResult;
 use auth::CurrentUser;
 use axum::http::{Error, StatusCode};

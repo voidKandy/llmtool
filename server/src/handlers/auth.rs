@@ -28,7 +28,6 @@ pub async fn auth_middleware(
             return Ok(next.run(req).await);
         }
     }
-
     if let Some(session_id) = jar
         .get("session_id")
         .map(|cookie| cookie.value().to_owned())

@@ -78,7 +78,7 @@ pub struct NotesProps {
 
 #[component]
 pub fn NotesComponent(mut props: NotesProps) -> Element {
-    tracing::warn!("props for notes component: {props:#?}");
+    // tracing::warn!("props for notes component: {props:#?}");
     props
         .notes
         .sort_by(|a, b| a.last_updated.cmp(&b.last_updated));
@@ -99,7 +99,7 @@ pub fn NotesComponent(mut props: NotesProps) -> Element {
             });
         }
     }
-    tracing::warn!("categorized notes : {categorized_notes_map:#?}");
+    // tracing::warn!("categorized notes : {categorized_notes_map:#?}");
 
     rsx!(
         div  {
