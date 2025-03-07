@@ -13,6 +13,7 @@ pub struct Note {
     // embedding
     // etc..
 }
+
 impl Note {
     fn create(title: &str, content: &str) -> Self {
         let now = Utc::now();
