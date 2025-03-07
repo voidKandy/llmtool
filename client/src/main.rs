@@ -2,7 +2,7 @@ use components::notes::{generate_mock_notes, NotesComponent, NotesProps, NotesPr
 use dioxus::prelude::*;
 // use model::get_model_and_load;
 mod components;
-// mod model;
+mod model;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
@@ -12,26 +12,86 @@ fn main() {
     dioxus::launch(App);
 }
 
+pub type Error = Box<dyn std::error::Error + 'static + Send + Sync>;
+async fn load_model() -> Result<(), Error> {
+    let url =
+        "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/refs%2Fpr%2F21/";
+    let info = get_model_info(url);
+    let weights = fetch(&info.model_url).await;
+    let tokenizer = fetch(&info.tokenizer_url).await;
+    let config = fetch(&info.config_url).await;
+    let mut model = model::Model::load(weights, tokenizer, config)?;
+    tracing::warn!("model loaded!");
+    let embeddings = model.get_embeddings(model::Params {
+        sentences: vec![String::from("sentence about something")],
+        normalize_embeddings: false,
+    });
+    tracing::warn!("embeddings: {embeddings:#?}");
+
+    Ok(())
+}
+
+struct ModelInfo {
+    model_url: String,
+    config_url: String,
+    tokenizer_url: String,
+    search_prefix: String,
+    document_prefix: String,
+}
+
+async fn fetch(url: &str) -> Vec<u8> {
+    // const cacheName = "bert-candle-cache";
+    // const cache = await caches.open(cacheName);
+    // const cachedResponse = await cache.match(url);
+    // if (cachedResponse) {
+    //   console.log("data is cached");
+    //   const data = await cachedResponse.arrayBuffer();
+    //   return new Uint8Array(data);
+    // }
+    // console.log("need to fetch resource");
+    // const res = await fetch(url, { cache: "force-cache" });
+    let res = reqwest::Client::new().get(url).send().await.unwrap();
+    res.bytes().await.unwrap().to_vec()
+}
+
+fn get_model_info(url: &str) -> ModelInfo {
+    return ModelInfo {
+        model_url: format!("{url}model.safetensors"),
+        config_url: format!("{url}config.json"),
+        tokenizer_url: format!("{url}tokenizer.json"),
+        search_prefix: String::new(),
+        document_prefix: String::new(),
+    };
+}
+
 #[component]
 fn App() -> Element {
+    let mut response = use_signal(|| String::from("..."));
+
+    let log_in = move |_| {
+        spawn(async move {
+            let resp = load_model().await;
+
+            match resp {
+                Ok(_data) => {
+                    tracing::info!("dioxuslabs.com responded!");
+                    response.set("dioxuslabs.com responded!".into());
+                }
+                Err(err) => {
+                    tracing::info!("Request failed with error: {err:?}")
+                }
+            }
+        });
+    };
     let mock_notes = generate_mock_notes();
     rsx! {
-        // document::Script{src: asset!("/assets/bertWorker.js"), type: Some("module".to_string()) }
-        // document::Script{src: asset!("/assets/utils.js"), type: Some("module".to_string()) }
-        // document::Script{src: asset!("/assets/test.js"), type: Some("module".to_string()) }
+        document::Link { rel: "icon", href: FAVICON }
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
+        button { onclick: log_in, "Response: {response}" }
         // Hero {}
         NotesComponent{notes: mock_notes }
-         // button {
-         //    onclick: move |_| async move {
-         //        get_model_and_load().await;
-         //        tracing::warn!("You clicked the button one second ago!");
-         //    },
-         //    "Click me"
-        // }
 
         // button { onclick: move |_| async move{  get_model_and_load }, id:"click!", "click me"}
-        // document::Link { rel: "icon", href: FAVICON }
-        // document::Link { rel: "stylesheet", href: MAIN_CSS }
          // button {
             // The `onclick` event accepts a closure with the signature `fn(Event)`
             // onclick: |event_data| tracing::warn!("clicked! I got the event data: {event_data:?}"),

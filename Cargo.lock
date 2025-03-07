@@ -4444,9 +4444,15 @@ version = "0.1.0"
 name = "llmtool_client"
 version = "0.1.0"
 dependencies = [
+ "candle-core",
+ "candle-nn",
+ "candle-transformers",
  "chrono",
  "dioxus",
  "reqwest",
+ "serde",
+ "serde_json",
+ "tokenizers 0.19.1",
  "tracing",
 ]
 
