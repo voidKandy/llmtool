@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export function greet(name: string): void;
 export class Model {
   free(): void;
   constructor(weights: Uint8Array, tokenizer: Uint8Array, config: Uint8Array);
@@ -14,6 +15,7 @@ export interface InitOutput {
   readonly model_load: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
   readonly model_get_embeddings: (a: number, b: any) => [number, number, number];
   readonly main: (a: number, b: number) => number;
+  readonly greet: (a: number, b: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;

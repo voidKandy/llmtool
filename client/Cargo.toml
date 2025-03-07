@@ -10,7 +10,7 @@ edition = "2021"
 chrono = "0.4.40"
 dioxus = { version = "0.6.0", features = ["fullstack"] }
 tracing = "0.1.41"
-
+reqwest = "0.12.12"
 
 [features]
 default = ["web"]

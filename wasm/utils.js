@@ -1,3 +1,13 @@
+/**
+ * Fetches embeddings using a Web Worker.
+ * @param {Worker} worker - The Web Worker instance handling model execution.
+ * @param {string} weightsURL - URL to the model weights file.
+ * @param {string} tokenizerURL - URL to the tokenizer file.
+ * @param {string} configURL - URL to the model config file.
+ * @param {string} modelID - Identifier for the model.
+ * @param {string[]} sentences - Array of sentences to process.
+ * @param {(status: object) => void} [updateStatus=null] - Optional callback to receive status updates.
+ */
 export async function getEmbeddings(
   worker,
   weightsURL,
@@ -5,7 +15,7 @@ export async function getEmbeddings(
   configURL,
   modelID,
   sentences,
-  updateStatus = null
+  updateStatus = null,
 ) {
   return new Promise((resolve, reject) => {
     worker.postMessage({
@@ -15,17 +25,25 @@ export async function getEmbeddings(
       modelID,
       sentences,
     });
-    function messageHandler(event) {
-      if ("error" in event.data) {
-        worker.removeEventListener("message", messageHandler);
-        reject(new Error(event.data.error));
+
+   function messageHandler(event) {
+      const data = event.data;
+
+      console.log(`Message received: ${JSON.stringify(data)}`);
+
+      if ("error" in data) {
+        reject(new Error(data.error));
+        return;
       }
-      if (event.data.status === "complete") {
+
+      if (data.status === "complete") {
         worker.removeEventListener("message", messageHandler);
-        resolve(event.data);
+        resolve(data);
+        return;
       }
-      if (updateStatus) updateStatus(event.data);
+
     }
+
     worker.addEventListener("message", messageHandler);
   });
 }
