@@ -2,8 +2,9 @@ use std::{collections::HashMap, time::Instant};
 
 use chrono::{Duration, TimeDelta, Utc};
 use dioxus::prelude::*;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Note {
     id: String,
     created: chrono::DateTime<Utc>,
@@ -13,6 +14,7 @@ pub struct Note {
     // embedding
     // etc..
 }
+
 impl Note {
     fn create(title: &str, content: &str) -> Self {
         let now = Utc::now();
@@ -72,28 +74,25 @@ pub enum Categorization {
 
 #[derive(Props, Clone, Debug, PartialEq)]
 pub struct NotesProps {
-    notes: Vec<Note>,
+    notes: Signal<Vec<Note>>,
     categorization: Option<Categorization>,
 }
 
 #[component]
-pub fn NotesComponent(mut props: NotesProps) -> Element {
-    // tracing::warn!("props for notes component: {props:#?}");
-    props
-        .notes
-        .sort_by(|a, b| a.last_updated.cmp(&b.last_updated));
-    let mut categorized_notes_map = HashMap::<&'static str, Vec<&Note>>::new();
+pub fn NotesComponent(props: NotesProps) -> Element {
+    let mut categorized_notes_map = HashMap::<&'static str, Vec<Note>>::new();
+    let r = props.notes.read();
     match props.categorization {
         Some(Categorization::Content) => {}
         Some(Categorization::Description) => {}
         None => {
-            props.notes.iter().for_each(|n| {
+            r.iter().for_each(|n| {
                 let period = TimePeriod::from(n.last_updated);
                 let key: &'static str = period.into();
                 match categorized_notes_map.get_mut(&key) {
-                    Some(ref mut v) => v.push(n),
+                    Some(ref mut v) => v.push(n.clone()),
                     None => {
-                        let _ = categorized_notes_map.insert(key, vec![n]);
+                        let _ = categorized_notes_map.insert(key, vec![n.clone()]);
                     }
                 }
             });
