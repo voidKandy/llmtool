@@ -4,7 +4,7 @@ mod components;
 mod services;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
-const MAIN_CSS: Asset = asset!("/assets/main.css");
+const GLOBAL_CSS: Asset = asset!("/assets/styles/global.css");
 
 pub type Error = Box<dyn std::error::Error + 'static + Send + Sync>;
 fn main() {
@@ -43,12 +43,12 @@ fn App() -> Element {
             generate_mock_notes()
         });
 
+    // yeah idk
+    let notes = cached_notes.read().clone();
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_CSS }
-        document::Script {src: asset!("assets/javascript/surreal.js"), type: Some("module".to_string())}
-        document::Script {src: asset!("assets/javascript/tst.js"), type: Some("module".to_string())}
+        document::Link { rel: "stylesheet", href: GLOBAL_CSS }
         button { onclick: try_load_model, "Response: {response}" }
-        NotesComponent{ notes: cached_notes }
+        NotesComponent{ notes: notes }
     }
 }

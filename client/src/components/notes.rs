@@ -1,16 +1,15 @@
-use std::{collections::HashMap, time::Instant};
-
 use chrono::{Duration, TimeDelta, Utc};
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Note {
-    id: String,
-    created: chrono::DateTime<Utc>,
-    last_updated: chrono::DateTime<Utc>,
-    title: String,
-    content: String,
+    pub id: String,
+    pub created: chrono::DateTime<Utc>,
+    pub last_updated: chrono::DateTime<Utc>,
+    pub title: String,
+    pub content: String,
     // embedding
     // etc..
 }
@@ -74,19 +73,20 @@ pub enum Categorization {
 
 #[derive(Props, Clone, Debug, PartialEq)]
 pub struct NotesProps {
-    notes: Signal<Vec<Note>>,
+    notes: Vec<Note>,
     categorization: Option<Categorization>,
 }
+
+pub const NOTE_STYLES: Asset = asset!("/assets/styles/notes.css");
 
 #[component]
 pub fn NotesComponent(props: NotesProps) -> Element {
     let mut categorized_notes_map = HashMap::<&'static str, Vec<Note>>::new();
-    let r = props.notes.read();
     match props.categorization {
         Some(Categorization::Content) => {}
         Some(Categorization::Description) => {}
         None => {
-            r.iter().for_each(|n| {
+            props.notes.iter().for_each(|n| {
                 let period = TimePeriod::from(n.last_updated);
                 let key: &'static str = period.into();
                 match categorized_notes_map.get_mut(&key) {
@@ -98,26 +98,50 @@ pub fn NotesComponent(props: NotesProps) -> Element {
             });
         }
     }
-    // tracing::warn!("categorized notes : {categorized_notes_map:#?}");
+    let mut current_note = use_signal::<Option<Note>>(|| None);
+    let selected_note_id = current_note
+        .read()
+        .as_ref()
+        .and_then(|n| Some(n.id.clone()));
 
     rsx!(
+        document::Link { rel: "stylesheet", href: NOTE_STYLES },
+
         div  {
             id: "notes",
-            for (category, notes) in categorized_notes_map.iter() {
-                div {
-                    id: "{category}",
-                    h1 {"{category}"}
-                    for note in notes.iter() {
-                        div {
-                            id: note.id.as_ref(),
-                            h2 {"{note.title}"}
-                            p {"{note.content}"}
+            div  {
+                id: "notes-selection-container",
+                for (category, notes) in categorized_notes_map.into_iter() {
+                    div {
+                        id: "{category}",
+                        class: "categorized-notes-selection",
+                        h1 {"{category}"}
+                        for note in notes.into_iter() {
+                            button {
+                                class: "note-selection-button",
+                                id: "note_{note.id}",
+                                onclick: move |_| {
+                                    tracing::warn!("clicked!\n{note:#?}");
+                                    current_note.set(Some(note.clone()));
+                                },
+                                "{note.title}",
+                             }
                         }
-                    }
+                    },
                 }
+            },
 
-            }
+            div {
+                id: "note-view",
+                if let Some(note) = current_note.read().as_ref() {
+                    h1 {"{note.title}"}
+                    p {"{note.content}"}
+                } else {
+                    h1{ "not note selected" }
+                }
+            },
         }
+
     )
 }
 
