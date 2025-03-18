@@ -1,7 +1,5 @@
-use std::string;
-
 // https://developers.google.com/identity/protocols/oauth2/native-app
-use super::{AppState, HttpError, HttpSuccess};
+use super::{HttpError, HttpSuccess};
 use crate::handlers::ErrorResponse;
 use axum::{extract::Request, middleware::Next, response::Response};
 use axum_extra::{

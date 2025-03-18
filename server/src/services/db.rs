@@ -35,20 +35,22 @@ impl Default for DatabaseConfig {
     }
 }
 
-pub async fn connect(config: DatabaseConfig) -> surrealdb::Result<Surreal<Client>> {
-    let creds = surrealdb::opt::auth::Root {
-        username: &config.username,
-        password: &config.password,
-    };
-    let db = Surreal::new::<Ws>(format!("{}:{}", config.host, config.port)).await?;
+impl DatabaseConfig {
+    pub async fn connect(&self) -> surrealdb::Result<Surreal<Client>> {
+        let creds = surrealdb::opt::auth::Root {
+            username: &self.username,
+            password: &self.password,
+        };
+        let db = Surreal::new::<Ws>(format!("{}:{}", &self.host, &self.port)).await?;
 
-    db.use_ns(config.namespace).await?;
-    db.use_db(config.database).await?;
-    db.signin(creds).await?;
+        db.use_ns(&self.namespace).await?;
+        db.use_db(&self.database).await?;
+        db.signin(creds).await?;
 
-    db.health().await.unwrap();
+        db.health().await.unwrap();
 
-    Ok(db)
+        Ok(db)
+    }
 }
 
 mod tests {
@@ -80,7 +82,7 @@ mod tests {
             id: None,
             username: "Ben".to_owned(),
         };
-        let db = super::connect(cfg).await.unwrap();
+        let db = cfg.connect().await.unwrap();
 
         // delete all users
         db.delete::<Vec<User>>("user").await.unwrap();
