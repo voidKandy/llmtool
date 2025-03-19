@@ -6,19 +6,23 @@
 .note-selector-button {
   border: none;
   background-color: transparent;
+  filter: brightness(60%);
   padding: 20px;
   font-weight: 600;
-  color: grey;
+  color: var(--dutch-white);
   cursor: pointer;
+  transition: all ease-in 150ms;
 }
 
 .note-selector-button:hover {
   cursor: pointer;
-  background-color: pink;
+  filter: brightness(100%);
+  backdrop-filter: brightness(150%);
 }
 
 .note-selector-button.selected {
-  background-color: pink;
+  filter: brightness(100%);
+  backdrop-filter: brightness(150%);
 }
 
 .categorized-notes-selection {
@@ -27,7 +31,7 @@
 }
 
 .categorized-notes-selection button:not(:last-child) {
-  border-bottom: solid 1px grey !important;
+  border-bottom: solid 1px var(--dutch-white) !important;
 }
 
 #note-view {

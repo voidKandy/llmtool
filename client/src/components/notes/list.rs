@@ -105,7 +105,7 @@ pub fn NotesSelectionView(mut props: NoteSelectionViewProps) -> Element {
 
     let map_r = categorized_notes_map.read().clone();
     let selected_note_id: Option<u64> = props.current_note_id.read().to_owned();
-    // tracing::warn!("categorized: {categorized_notes_map:?}");
+
     rsx!(div {
         id: "notes-selection-view",
             for (category, notes) in map_r.into_iter() {
@@ -118,7 +118,6 @@ pub fn NotesSelectionView(mut props: NoteSelectionViewProps) -> Element {
                             note: note.clone(),
                             selected: selected_note_id.is_some_and(|id| id == note.id),
                             onclick: move |_| {
-                                tracing::warn!("clicked {}", note.id);
                                 let mut w =
                                 props.current_note_id.write();
                                  *w = Some(note.id);

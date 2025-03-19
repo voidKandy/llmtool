@@ -38,6 +38,9 @@ fn App() -> Element {
     };
 
     rsx! {
+        document::Link{ rel:"preconnect", href:"https://fonts.googleapis.com"}
+        document::Link{ rel:"preconnect", href:"https://fonts.gstatic.com", crossorigin: "true"}
+        document::Link{ href:"https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&display=swap", rel:"stylesheet"}
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: GLOBAL_CSS }
         button { onclick: try_load_model, "Response: {response}" }
