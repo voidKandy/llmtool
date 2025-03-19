@@ -1,5 +1,8 @@
+pub mod list;
+pub mod selector;
 use chrono::{Duration, TimeDelta, Utc};
 use dioxus::prelude::*;
+use selector::NoteSelector;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -15,12 +18,11 @@ pub struct Note {
 }
 
 impl Note {
-    fn create(title: &str, content: &str) -> Self {
+    fn create(id: &str, title: &str, content: &str) -> Self {
         let now = Utc::now();
         // fine for now
-        let id = now.to_string();
         Self {
-            id,
+            id: id.to_string(),
             created: now,
             last_updated: now,
             title: title.to_string(),
@@ -72,21 +74,25 @@ pub enum Categorization {
 }
 
 #[derive(Props, Clone, Debug, PartialEq)]
-pub struct NotesProps {
-    notes: Vec<Note>,
+pub struct NotesViewProps {
     categorization: Option<Categorization>,
 }
 
 pub const NOTE_STYLES: Asset = asset!("/assets/styles/notes.css");
 
 #[component]
-pub fn NotesComponent(props: NotesProps) -> Element {
+pub fn NotesViewComponent(props: NotesViewProps) -> Element {
+    let cached_notes = dioxus_sdk::storage::use_persistent::<Vec<Note>>("notes", || {
+        tracing::warn!("generating");
+        generate_mock_notes()
+    });
+
     let mut categorized_notes_map = HashMap::<&'static str, Vec<Note>>::new();
     match props.categorization {
         Some(Categorization::Content) => {}
         Some(Categorization::Description) => {}
         None => {
-            props.notes.iter().for_each(|n| {
+            cached_notes.iter().for_each(|n| {
                 let period = TimePeriod::from(n.last_updated);
                 let key: &'static str = period.into();
                 match categorized_notes_map.get_mut(&key) {
@@ -98,12 +104,8 @@ pub fn NotesComponent(props: NotesProps) -> Element {
             });
         }
     }
+    warn!("categorized: {categorized_notes_map}");
     let mut current_note = use_signal::<Option<Note>>(|| None);
-    let selected_note_id = current_note
-        .read()
-        .as_ref()
-        .and_then(|n| Some(n.id.clone()));
-
     rsx!(
         document::Link { rel: "stylesheet", href: NOTE_STYLES },
 
@@ -117,15 +119,14 @@ pub fn NotesComponent(props: NotesProps) -> Element {
                         class: "categorized-notes-selection",
                         h1 {"{category}"}
                         for note in notes.into_iter() {
-                            button {
-                                class: "note-selection-button",
-                                id: "note_{note.id}",
+                            NoteSelector {
+                                note: note.clone(),
+                                selected: current_note.read().as_ref().is_some_and(|n| n == n),
                                 onclick: move |_| {
                                     tracing::warn!("clicked!\n{note:#?}");
                                     current_note.set(Some(note.clone()));
                                 },
-                                "{note.title}",
-                             }
+                            }
                         }
                     },
                 }
@@ -146,44 +147,60 @@ pub fn NotesComponent(props: NotesProps) -> Element {
 }
 
 pub fn generate_mock_notes() -> Vec<Note> {
-    let mock_titles = vec![
-        "Meeting Notes",
-        "Project Update",
-        "Shopping List",
-        "Daily Journal",
-        "Workout Plan",
-        "Recipe Ideas",
-        "Coding Thoughts",
-        "Travel Itinerary",
-        "Book Summary",
-        "Music Playlist",
-        "Business Strategy",
-        "Movie Watchlist",
-        "Personal Goals",
-        "Ideas & Inspiration",
-        "Random Thoughts",
+    let mock_info = vec![
+        (
+            "Meeting Notes",
+            "Discussed project roadmap and key deadlines.",
+        ),
+        (
+            "Project Update",
+            "Updated the team on the latest features added.",
+        ),
+        (
+            "Shopping List",
+            "Milk, eggs, bread, and some fresh vegetables.",
+        ),
+        (
+            "Daily Journal",
+            "Wrote about my experiences today and reflections.",
+        ),
+        ("Workout Plan", "Planned a full-body workout for the week."),
+        ("Recipe Ideas", "Experimenting with a new pasta recipe."),
+        (
+            "Coding Thoughts",
+            "Thinking about optimizing the Redux store.",
+        ),
+        ("Travel Itinerary", "Booked flights for the upcoming trip."),
+        (
+            "Book Summary",
+            "Summarized key insights from the book I read.",
+        ),
+        ("Music Playlist", "Compiled a list of favorite rock songs."),
+        (
+            "Business Strategy",
+            "Outlined marketing strategies for next quarter.",
+        ),
+        (
+            "Movie Watchlist",
+            "Added some classic films to my watchlist.",
+        ),
+        (
+            "Personal Goals",
+            "Set personal and career goals for the year.",
+        ),
+        (
+            "Ideas & Inspiration",
+            "Captured new creative ideas for future projects.",
+        ),
+        (
+            "Random Thoughts",
+            "Just a collection of random musings and thoughts.",
+        ),
     ];
 
-    let mock_contents = vec![
-        "Discussed project roadmap and key deadlines.",
-        "Updated the team on the latest features added.",
-        "Milk, eggs, bread, and some fresh vegetables.",
-        "Wrote about my experiences today and reflections.",
-        "Planned a full-body workout for the week.",
-        "Experimenting with a new pasta recipe.",
-        "Thinking about optimizing the Redux store.",
-        "Booked flights for the upcoming trip.",
-        "Summarized key insights from the book I read.",
-        "Compiled a list of favorite rock songs.",
-        "Outlined marketing strategies for next quarter.",
-        "Added some classic films to my watchlist.",
-        "Set personal and career goals for the year.",
-        "Captured new creative ideas for future projects.",
-        "Just a collection of random musings and thoughts.",
-    ];
-
+    let mut id = 0;
     // Function to create notes based on specific periods
-    let create_notes_for_period = |period: TimePeriod, count: usize| -> Vec<Note> {
+    let mut create_notes_for_period = |period: TimePeriod, count: usize| -> Vec<Note> {
         let period_duration = match period {
             TimePeriod::Today => Duration::minutes(0),
             TimePeriod::LastWeek => Duration::days(7),
@@ -193,7 +210,12 @@ pub fn generate_mock_notes() -> Vec<Note> {
 
         (0..count)
             .map(|index| {
-                let mut n = Note::create(mock_titles[index], mock_contents[index]);
+                let mut n = Note::create(
+                    id.to_string().as_str(),
+                    mock_info[id + index].0,
+                    mock_info[id + index].1,
+                );
+                id += 1;
                 let last_updated = n.created - period_duration;
                 n.last_updated = last_updated;
                 n
@@ -201,12 +223,13 @@ pub fn generate_mock_notes() -> Vec<Note> {
             .collect()
     };
 
+    let amt = mock_info.len() / 4;
     // Generate notes for each period, 5 notes per period
     let mut mock_notes: Vec<Note> = Vec::new();
-    mock_notes.extend(create_notes_for_period(TimePeriod::Today, 5));
-    mock_notes.extend(create_notes_for_period(TimePeriod::LastWeek, 5));
-    mock_notes.extend(create_notes_for_period(TimePeriod::LastMonth, 5));
-    mock_notes.extend(create_notes_for_period(TimePeriod::Older, 5));
+    mock_notes.extend(create_notes_for_period(TimePeriod::Today, amt));
+    mock_notes.extend(create_notes_for_period(TimePeriod::LastWeek, amt));
+    mock_notes.extend(create_notes_for_period(TimePeriod::LastMonth, amt));
+    mock_notes.extend(create_notes_for_period(TimePeriod::Older, amt));
 
     mock_notes
 }

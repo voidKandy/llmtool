@@ -1,4 +1,4 @@
-use components::notes::{generate_mock_notes, NotesComponent};
+use components::notes::{generate_mock_notes, NotesViewComponent};
 use dioxus::prelude::*;
 mod components;
 mod services;
@@ -37,18 +37,11 @@ fn App() -> Element {
         });
     };
 
-    let cached_notes =
-        dioxus_sdk::storage::use_persistent::<Vec<components::notes::Note>>("notes", || {
-            tracing::warn!("generating");
-            generate_mock_notes()
-        });
-
     // yeah idk
-    let notes = cached_notes.read().clone();
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: GLOBAL_CSS }
         button { onclick: try_load_model, "Response: {response}" }
-        NotesComponent{ notes: notes }
+        NotesViewComponent{ }
     }
 }
