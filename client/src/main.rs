@@ -1,4 +1,4 @@
-use components::notes::{generate_mock_notes, NotesViewComponent};
+use components::notes::NotesViewComponent;
 use dioxus::prelude::*;
 mod components;
 mod services;
@@ -37,11 +37,10 @@ fn App() -> Element {
         });
     };
 
-    // yeah idk
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: GLOBAL_CSS }
         button { onclick: try_load_model, "Response: {response}" }
-        NotesViewComponent{ }
+        NotesViewComponent {  }
     }
 }

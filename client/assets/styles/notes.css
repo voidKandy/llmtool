@@ -3,7 +3,7 @@
   flex-direction: row;
 }
 
-.note-selection-button {
+.note-selector-button {
   border: none;
   background-color: transparent;
   padding: 20px;
@@ -12,12 +12,12 @@
   cursor: pointer;
 }
 
-.note-selection-button:hover {
+.note-selector-button:hover {
   cursor: pointer;
   background-color: pink;
 }
 
-.note-selection-button.selected {
+.note-selector-button.selected {
   background-color: pink;
 }
 
