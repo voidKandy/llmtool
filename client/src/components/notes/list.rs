@@ -22,7 +22,7 @@ fn NoteSelector(props: NoteSelectorProps) -> Element {
     );
     rsx!(
     button {
-        id: "note_{props.note.id}",
+        key: "note_{props.note.id}",
         class: class,
         onclick: props.onclick,
         "{props.note.title}",
@@ -106,24 +106,29 @@ pub fn NotesSelectionView(mut props: NoteSelectionViewProps) -> Element {
     let map_r = categorized_notes_map.read().clone();
     let selected_note_id: Option<u64> = props.current_note_id.read().to_owned();
 
-    rsx!(div {
+    rsx!(ul {
         id: "notes-selection-view",
             for (category, notes) in map_r.into_iter() {
-                div {
-                    id: "{category}",
+                li {
+                    key: "{category}",
                     class: "categorized-notes-selection",
                     h1 {"{category}"},
+                    ul {
                     for note in notes.into_iter() {
-                        NoteSelector{
-                            note: note.clone(),
-                            selected: selected_note_id.is_some_and(|id| id == note.id),
-                            onclick: move |_| {
-                                let mut w =
-                                props.current_note_id.write();
-                                 *w = Some(note.id);
+                        li {
+                            key: "{note.id}",
+                            NoteSelector{
+                                note: note.clone(),
+                                selected: selected_note_id.is_some_and(|id| id == note.id),
+                                onclick: move |_| {
+                                    let mut w =
+                                    props.current_note_id.write();
+                                     *w = Some(note.id);
+                                }
                             }
                         }
                         }
+                    }
                 },
             }
     })

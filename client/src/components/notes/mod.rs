@@ -1,3 +1,4 @@
+pub mod edit;
 pub mod list;
 use chrono::{Duration, TimeDelta, Utc};
 use dioxus::prelude::*;
@@ -42,11 +43,12 @@ impl Note {
 pub type CachedNotes = HashMap<u64, Note>;
 const NOTE_STYLES: Asset = asset!("/assets/styles/notes.css");
 
+pub const NOTES_STORAGE: &str = "notes";
 #[derive(Props, Clone, Debug, PartialEq)]
 pub struct NotesViewProps {}
 #[component]
 pub fn NotesViewComponent(props: NotesViewProps) -> Element {
-    let cached_notes = dioxus_sdk::storage::new_persistent("notes", || {
+    let cached_notes = dioxus_sdk::storage::new_persistent(NOTES_STORAGE, || {
         tracing::warn!("generating");
         list::generate_mock_notes()
     });
@@ -80,8 +82,3 @@ pub fn NotesViewComponent(props: NotesViewProps) -> Element {
 
     )
 }
-
-// #[derive(Props, Clone, Debug, PartialEq)]
-// pub struct NotesViewProps {}
-// #[component]
-// pub fn NotesViewComponent(props: NotesViewProps) -> Element {}

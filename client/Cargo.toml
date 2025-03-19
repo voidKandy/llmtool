@@ -20,6 +20,7 @@ serde_json = { workspace=true }
 tokenizers = { version = "0.19.0", default-features=false, features = ["unstable_wasm"] }
 chrono = { version = "0.4.40", features = ["serde"] }
 dioxus-sdk = { version = "0.6.0", features = ["storage"] }
+markdown = "0.3.0"
 
 
 [features]
