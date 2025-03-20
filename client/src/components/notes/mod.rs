@@ -2,6 +2,7 @@ pub mod edit;
 pub mod list;
 use chrono::{Duration, TimeDelta, Utc};
 use dioxus::prelude::*;
+use edit::NoteEdit;
 use list::NotesSelectionView;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -54,30 +55,26 @@ pub fn NotesViewComponent(props: NotesViewProps) -> Element {
     });
     let current_note_id: Signal<Option<u64>> = use_signal(|| Option::<u64>::None);
     //title content
-    let current_note_info: Option<(String, String)> = cached_notes
+    let current_note: Option<Note> = cached_notes
         .read()
         // im assuming 0 wont return a note id so this should be changed later
         .get(&current_note_id.read().clone().unwrap_or(0))
-        .as_ref()
-        .and_then(|n| Some((n.title.to_owned(), n.content.to_owned())));
+        .cloned();
 
     rsx!(
         document::Link { rel: "stylesheet", href: NOTE_STYLES },
         div  {
-            id: "notes",
+            id: "notes-view",
             NotesSelectionView{
                 notes: cached_notes,
                  current_note_id: current_note_id
              }
-        div {
-            id: "note-view",
-            if let Some((title, content)) = current_note_info {
-                h1 {"{title}"}
-                p {"{content}"}
-            } else {
+             if let Some(note) = current_note {
+                 NoteEdit{ note: note }
+             } else
+             {
                 h1{ "not note selected" }
-            }
-        },
+             }
         }
 
     )
