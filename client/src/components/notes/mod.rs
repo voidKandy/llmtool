@@ -66,9 +66,10 @@ pub fn NotesViewComponent(props: NotesViewProps) -> Element {
         div  {
             id: "notes-view",
             NotesSelectionView{
+
                 notes: cached_notes,
                  current_note_id: current_note_id
-             }
+            }
              if let Some(note) = current_note {
                  NoteEdit{ note: note }
              } else
