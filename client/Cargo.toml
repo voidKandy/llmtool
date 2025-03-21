@@ -7,7 +7,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.40"
 dioxus = { version = "0.6.0", features = ["fullstack"] }
 tracing = "0.1.41"
 reqwest = "0.12.12"
@@ -20,13 +19,16 @@ serde_json = { workspace = true }
 tokenizers = { version = "0.19.0", default-features = false, features = [
     "unstable_wasm",
 ] }
+chrono = { version = "0.4.40", features = ["serde"] }
+dioxus-sdk = { version = "0.6.0", features = ["storage"] }
+markdown = "0.3.0"
 
 
 [features]
 default = ["web"]
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
-mobile = ["dioxus/mobile"]
+# mobile = ["dioxus/mobile"]
 
 [profile.wasm-dev]
 inherits = "dev"
@@ -35,5 +37,5 @@ opt-level = 1
 [profile.server-dev]
 inherits = "dev"
 
-[profile.android-dev]
-inherits = "dev"
+# [profile.android-dev]
+# inherits = "dev"
