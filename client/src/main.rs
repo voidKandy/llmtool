@@ -2,6 +2,7 @@ use components::notes::NotesViewComponent;
 use dioxus::prelude::*;
 mod components;
 mod services;
+pub mod state;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const GLOBAL_CSS: Asset = asset!("/assets/styles/global.css");
