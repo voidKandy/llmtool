@@ -74,7 +74,7 @@ pub fn NotesViewComponent(props: NotesViewProps) -> Element {
                  NoteEdit{ note: note }
              } else
              {
-                h1{ "not note selected" }
+                h1{ "no note selected" }
              }
         }
 

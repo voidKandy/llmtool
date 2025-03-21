@@ -1,7 +1,5 @@
 use super::{CachedNotes, Note, NOTES_STORAGE};
 use dioxus::prelude::*;
-use dioxus_sdk::storage::use_persistent;
-use global_attributes::dangerous_inner_html;
 
 #[derive(Props, Clone, Debug, PartialEq)]
 pub struct NoteEditProps {
