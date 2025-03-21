@@ -6,7 +6,7 @@ edition = "2021"
 [lib]
 path = "src/lib.rs"
 [workspace]
-members = ["client", "server", "wasm"]
+members = ["client", "server"]
 
 [workspace.dependencies]
 serde = { version = "1.0.217", features = ["derive"] }
