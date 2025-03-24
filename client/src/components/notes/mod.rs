@@ -53,29 +53,30 @@ pub fn NotesViewComponent(props: NotesViewProps) -> Element {
         tracing::warn!("generating");
         list::generate_mock_notes()
     });
-    let current_note_id: Signal<Option<u64>> = use_signal(|| Option::<u64>::None);
-    //title content
-    let current_note: Option<Note> = cached_notes
-        .read()
-        // im assuming 0 wont return a note id so this should be changed later
-        .get(&current_note_id.read().clone().unwrap_or(0))
-        .cloned();
+    let mut current_note: Signal<Option<Note>> = use_signal(|| None);
+
+    // let current_note_id: Signal<Option<u64>> = use_signal(|| Option::<u64>::None);
+    // //title content
+    // let current_note: Option<Note> = cached_notes
+    //     .read()
+    //     // im assuming 0 wont return a note id so this should be changed later
+    //     .get(&current_note_id.read().clone().unwrap_or(0))
+    //     .cloned();
 
     rsx!(
         document::Link { rel: "stylesheet", href: NOTE_STYLES },
         div  {
             id: "notes-view",
             NotesSelectionView{
-
                 notes: cached_notes,
-                 current_note_id: current_note_id
+                current_note: current_note,
             }
-             if let Some(note) = current_note {
-                 NoteEdit{ note: note }
-             } else
-             {
+            if let Some(note) = current_note() {
+                NoteEdit{ note: note }
+            } else
+            {
                 h1{ "no note selected" }
-             }
+            }
         }
 
     )
