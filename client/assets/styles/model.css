@@ -1,0 +1,11 @@
+.model-loading-container {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: var(--dutch-white);
+  color: var(--smokey-black);
+}
+
+.model-loading-container {
+  padding: 0.25rem;
+}

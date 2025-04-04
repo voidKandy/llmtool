@@ -91,6 +91,7 @@ impl Model {
         Ok(embeddings.to_vec2()?)
     }
 }
+
 pub async fn load_model() -> Result<(), crate::Error> {
     let url =
         "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/refs%2Fpr%2F21/";

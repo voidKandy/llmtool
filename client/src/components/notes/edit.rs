@@ -1,16 +1,16 @@
 use super::Note;
 use dioxus::prelude::*;
 
-#[derive(Props, Clone, Debug, PartialEq)]
-pub struct NoteEditProps {
-    note: Note,
-}
-
+// #[derive(Props, Clone, Debug, PartialEq)]
+// pub struct NoteEditProps {
+//     note: Note,
+// }
 #[component]
-pub fn NoteEdit(props: NoteEditProps) -> Element {
+pub fn NoteEdit(current_note: ReadOnlySignal<Option<Note>>) -> Element {
     let mut is_edit = use_signal(|| false);
-    let mut content = use_signal(|| props.note.content);
-    let content_html = use_memo(move || markdown::to_html(content().as_str()));
+    let mut note_title = use_signal(|| format!(""));
+    let mut note_content = use_signal(|| format!(""));
+    let content_html = use_memo(move || markdown::to_html(note_content().as_str()));
 
     use_effect(move || {
         if is_edit() {
@@ -18,23 +18,39 @@ pub fn NoteEdit(props: NoteEditProps) -> Element {
         }
     });
 
+    use_effect(move || {
+        if let Some(note) = current_note() {
+            tracing::info!("edit note: {note:?}");
+            note_title.set(note.title);
+            note_content.set(note.content);
+        } else {
+            note_title.set(format!(""));
+            note_content.set(format!(""));
+        }
+    });
+
     rsx! {
-        div {
-            id: "note-edit",
-            h1 { "{props.note.title}" },
-            if is_edit() {
-                TextArea {
-                    content: content,
-                    oninput: move |event: FormEvent| content.set(event.value()),
-                    onblur: move |_| is_edit.set(!is_edit())
-                }
-            } else {
-                Markdown {
-                    content_html: content_html,
-                    ondoubleclick: move |_| is_edit.set(!is_edit())
-                }
+        if let Some(note) = current_note() {
+            div {
+                id: "note-edit",
+                h1 { "{note_title}" },
+                if is_edit() {
+                    TextArea {
+                        content: note_content,
+                        oninput: move |event: FormEvent| note_content.set(event.value()),
+                        onblur: move |_| is_edit.set(!is_edit())
+                    }
+                } else {
+                    Markdown {
+                        content_html: content_html,
+                        ondoubleclick: move |_| is_edit.set(!is_edit())
+                    }
+                },
             },
-        },
+        } else
+        {
+            h1{ "no note selected" }
+        }
     }
 }
 

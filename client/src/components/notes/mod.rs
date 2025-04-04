@@ -3,7 +3,7 @@ pub mod list;
 use chrono::{Duration, TimeDelta, Utc};
 use dioxus::prelude::*;
 use edit::NoteEdit;
-use list::NotesSelectionView;
+use list::NotesSelectionList;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -43,39 +43,40 @@ impl Note {
 
 pub type CachedNotes = HashMap<u64, Note>;
 const NOTE_STYLES: Asset = asset!("/assets/styles/notes.css");
+const NOTES_STORAGE: &str = "notes";
 
-pub const NOTES_STORAGE: &str = "notes";
-#[derive(Props, Clone, Debug, PartialEq)]
-pub struct NotesViewProps {}
 #[component]
-pub fn NotesViewComponent(props: NotesViewProps) -> Element {
+pub fn NotesViewComponent() -> Element {
     let cached_notes = dioxus_sdk::storage::new_persistent(NOTES_STORAGE, || {
         tracing::warn!("generating");
         list::generate_mock_notes()
     });
-    let mut current_note: Signal<Option<Note>> = use_signal(|| None);
+    let current_note_id: Signal<Option<u64>> = use_signal(|| None);
+    let current_note: Memo<Option<Note>> =
+        use_memo(move || current_note_id().and_then(|id| cached_notes().get(&id).cloned()));
 
-    // let current_note_id: Signal<Option<u64>> = use_signal(|| Option::<u64>::None);
-    // //title content
-    // let current_note: Option<Note> = cached_notes
-    //     .read()
-    //     // im assuming 0 wont return a note id so this should be changed later
-    //     .get(&current_note_id.read().clone().unwrap_or(0))
-    //     .cloned();
+    let mut cloned_titles: Signal<Vec<Note>> = use_signal(|| vec![]);
+
+    use_effect(move || {
+        cloned_titles.set(
+            cached_notes()
+                .iter()
+                .map(|(_, note)| note.to_owned())
+                .collect::<Vec<Note>>(),
+        );
+    });
 
     rsx!(
         document::Link { rel: "stylesheet", href: NOTE_STYLES },
         div  {
             id: "notes-view",
-            NotesSelectionView{
-                notes: cached_notes,
-                current_note: current_note,
+            NotesSelectionList{
+                // categorization: None,
+                cloned_notes: cloned_titles(),
+                current_note_id: current_note_id,
             }
-            if let Some(note) = current_note() {
-                NoteEdit{ note: note }
-            } else
-            {
-                h1{ "no note selected" }
+            NoteEdit {
+                current_note: current_note
             }
         }
 
