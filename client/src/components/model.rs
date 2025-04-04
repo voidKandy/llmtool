@@ -6,14 +6,16 @@ const MODEL_STYLES: Asset = asset!("/assets/styles/model.css");
 #[component]
 pub fn ModelLoader() -> Element {
     // let mut response = use_signal(|| String::from("..."));
-    let mut modelError = use_signal(|| "");
-    let mut modelLoading = use_signal(|| false);
-    let mut modelSuccess = use_signal(|| false);
+    let mut model_error = use_signal(|| "");
+    let mut model_loading = use_signal(|| false);
+    let mut model_success = use_signal(|| false);
 
     let try_load_model = move |_| {
         spawn(async move {
-            modelLoading.set(true);
+            model_loading.set(true);
             let resp = services::ml::load_model().await;
+            // cache hash
+            // HashMap< &'static str,BurtModel>
 
             match resp {
                 Ok(_) => {
@@ -22,11 +24,12 @@ pub fn ModelLoader() -> Element {
                 }
                 Err(err) => {
                     tracing::info!("model loading failed with error: {err:?}");
-                    modelError.set("failed to load model");
+                    model_error.set("failed to load model");
                     // response.set(format!("Request failed with error: {err:?}"));
                 }
             }
-            modelLoading.set(false);
+            model_success.set(true);
+            model_loading.set(false);
         });
     };
 
@@ -35,11 +38,14 @@ pub fn ModelLoader() -> Element {
         div {
             class:"model-loading-container",
             onmounted:try_load_model,
-            if modelLoading() == true && modelError() == "" {
+            if model_loading() == false && model_error() == "" && model_success() == true {
+                p{"loading model success"}
+            }
+            else if model_loading() == true && model_error() == "" {
                 p{"loading model"}
             }
-            else if modelLoading() == false && modelError() != "" {
-                p{"{modelError}"}
+            else if model_loading() == false && model_error() != "" {
+                p{"{model_error}"}
             }
         }
     )

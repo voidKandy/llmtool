@@ -81,6 +81,11 @@
   height: 100%;
   background-color: var(--smokey-black);
   color: var(--dutch-white);
+  white-space: pre-wrap;
+}
+
+.note-markdown {
+  white-space: pre-wrap;
 }
 
 #note-edit .note-markdown p > code {
