@@ -1,3 +1,7 @@
+
+use std::collections::HashMap;
+
+
 use candle_core::{DType, Device, Tensor};
 use candle_nn::VarBuilder;
 use candle_transformers::models::bert::{BertModel, Config};
@@ -91,6 +95,7 @@ impl Model {
         Ok(embeddings.to_vec2()?)
     }
 }
+
 pub async fn load_model() -> Result<(), crate::Error> {
     let url =
         "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/refs%2Fpr%2F21/";
@@ -98,6 +103,7 @@ pub async fn load_model() -> Result<(), crate::Error> {
     let weights = fetch(&info.model_url).await;
     let tokenizer = fetch(&info.tokenizer_url).await;
     let config = fetch(&info.config_url).await;
+
     let mut model = Model::load(weights, tokenizer, config)?;
     tracing::warn!("model loaded!");
     let embeddings = model.get_embeddings(Params {

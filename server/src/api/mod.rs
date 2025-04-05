@@ -1,22 +1,28 @@
 use crate::handlers::notes::{NoteRecord, NotesRecord};
+
+use crate::services::cache::CacheConfig;
 use crate::services::db::{DatabaseConfig, Record};
 use std::future::Future;
-use surrealdb::engine::remote::ws::Client;
+use surrealdb::engine::local::Db;
+use surrealdb::engine::{local::Mem, remote::ws::Client};
 use surrealdb::{Result, Surreal};
 
 mod notes;
 
 pub struct Api {
-    // cache: Redis or sum
+    cache: Surreal<Db>,
     db: Surreal<Client>,
 }
 
 impl Api {
     pub async fn init() -> Self {
-        let db = crate::services::db::connect(DatabaseConfig::default())
-            .await
-            .expect("problem connecting to database");
-        Self { db }
+        let db_cfg = DatabaseConfig::default();
+        let db = db_cfg.connect().await.unwrap();
+
+        let cache_cfg = CacheConfig::default();
+        let cache = cache_cfg.connect().await.unwrap();
+
+        Self { db, cache }
     }
 }
 

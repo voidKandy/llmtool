@@ -1,33 +1,80 @@
-use chrono::{Duration, TimeDelta, Utc};
+
+use super::Note;
+use chrono::Duration;
+use chrono::{TimeDelta, Utc};
+use dioxus::dioxus_core;
+use dioxus::html::p;
 use dioxus::prelude::*;
-use dioxus_core::SpawnIfAsync;
-use serde::{Deserialize, Serialize};
+use serde_json::error::Category;
 use std::collections::HashMap;
-use tracing::Instrument;
 
-use super::{CachedNotes, Note};
-
-#[derive(Props, Clone, Debug, PartialEq)]
-struct NoteSelectorProps {
-    note: Note,
-    selected: bool,
-    onclick: EventHandler<MouseEvent>,
-}
+// #[derive(Props, Clone, Debug, PartialEq)]
+// struct NoteSelectionViewProps {
+//     notes: ReadOnlySignal<HashMap<u64, Note>>,
+//     current_note: Signal<Option<Note>>,
+// }
 
 #[component]
-fn NoteSelector(props: NoteSelectorProps) -> Element {
-    let class = format!(
-        "note-selector-button {}",
-        if props.selected { "selected" } else { "" }
-    );
+pub fn NotesSelectionList(
+    // props: NoteSelectionViewProps,
+    categorization: Option<Categorization>,
+    cloned_notes: Vec<Note>,
+    current_note_id: Signal<Option<u64>>,
+) -> Element {
+    let mut categorized_notes_map = use_signal(|| HashMap::new());
+
+    use_effect(move || {
+        let mut map: HashMap<&'static str, Vec<Note>> = HashMap::new();
+
+        match categorization {
+            Some(Categorization::Content) => {}
+            Some(Categorization::Description) => {}
+            None => {
+                cloned_notes.iter().for_each(|n| {
+                    let period = TimePeriod::from(n.last_updated);
+                    let key: &'static str = period.into();
+                    match map.get_mut(&key) {
+                        Some(ref mut v) => v.push(n.clone()),
+                        None => {
+                            let _ = map.insert(key, vec![n.clone()]);
+                        }
+                    }
+                });
+            }
+        }
+        categorized_notes_map.set(map);
+    });
+
     rsx!(
-    button {
-        key: "note_{props.note.id}",
-        class: class,
-        onclick: props.onclick,
-        "{props.note.title}",
-     }
-    )
+        ul {
+        id: "notes-selection-view",
+        for (category, notes) in categorized_notes_map().into_iter() {
+            div {
+                key: "{category}",
+                class: "categorized-notes-selection",
+                h1 {"{category}"},
+                ul {
+                    for note in notes.into_iter(){
+                        li {
+                            key: "note_{note.id}",
+                            class:"note-list-item",
+                            button {
+                                class: "note-selector-button",
+                                class: if current_note_id().is_some_and(|selected| selected == note.id) {
+                                    "selected"
+                                } else {
+                                    ""
+                                },
+                                onclick: move |_| current_note_id.set(Some(note.id)),
+                                "{note.title}",
+                            }
+                        },
+                        }
+                    }
+            }
+        }
+    })
+
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -72,67 +119,6 @@ impl From<chrono::DateTime<Utc>> for TimePeriod {
     }
 }
 
-#[derive(Props, Clone, Debug, PartialEq)]
-pub struct NoteSelectionViewProps {
-    categorization: Option<Categorization>,
-    notes: ReadOnlySignal<CachedNotes>,
-    current_note_id: Signal<Option<u64>>,
-}
-
-#[component]
-pub fn NotesSelectionView(mut props: NoteSelectionViewProps) -> Element {
-    let categorized_notes_map = use_signal(|| {
-        let mut map: HashMap<&'static str, Vec<Note>> = HashMap::new();
-
-        match props.categorization {
-            Some(Categorization::Content) => {}
-            Some(Categorization::Description) => {}
-            None => {
-                props.notes.read().iter().for_each(|(_id, n)| {
-                    let period = TimePeriod::from(n.last_updated);
-                    let key: &'static str = period.into();
-                    match map.get_mut(&key) {
-                        Some(ref mut v) => v.push(n.clone()),
-                        None => {
-                            let _ = map.insert(key, vec![n.clone()]);
-                        }
-                    }
-                });
-            }
-        }
-        map
-    });
-
-    let map_r = categorized_notes_map.read().clone();
-    let selected_note_id: Option<u64> = props.current_note_id.read().to_owned();
-
-    rsx!(ul {
-        id: "notes-selection-view",
-            for (category, notes) in map_r.into_iter() {
-                li {
-                    key: "{category}",
-                    class: "categorized-notes-selection",
-                    h1 {"{category}"},
-                    ul {
-                    for note in notes.into_iter() {
-                        li {
-                            key: "{note.id}",
-                            NoteSelector{
-                                note: note.clone(),
-                                selected: selected_note_id.is_some_and(|id| id == note.id),
-                                onclick: move |_| {
-                                    let mut w =
-                                    props.current_note_id.write();
-                                     *w = Some(note.id);
-                                }
-                            }
-                        }
-                        }
-                    }
-                },
-            }
-    })
-}
 
 pub fn generate_mock_notes() -> super::CachedNotes {
     let mock_info = vec![

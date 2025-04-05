@@ -1,9 +1,17 @@
 :root {
-  --salmon: #FF8D70;
-  --dutch-white: #EDDEC0;
-  --cambridge-blue: #6B9E7F;
+
+  --salmon: #ff8d70;
+  --dutch-white: #eddec0;
+  --cambridge-blue: #6b9e7f;
   --smokey-black: #171512;
 }
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
 
 .kode-mono {
   font-family: "Kode Mono", monospace;
@@ -12,15 +20,21 @@
   font-style: normal;
 }
 
+
+html {
+  background-color: var(--smokey-black);
+}
+
 body {
   background-color: var(--smokey-black);
+  /* background-color: red; */
   color: var(--dutch-white);
-  font-family: 'Kode Mono', monospace;
-  margin: 20px;
+  font-family: "Kode Mono", monospace;
 }
 
 button {
-  font-family: 'Kode Mono', monospace;
+  font-family: "Kode Mono", monospace;
+
 }
 
 #hero {
@@ -60,7 +74,6 @@ button {
 }
 
 
-
 /* Echo */
 #echo {
   width: 360px;
@@ -72,12 +85,12 @@ button {
   border-radius: 10px;
 }
 
-#echo>h4 {
+
+#echo > h4 {
   margin: 0px 0px 15px 0px;
 }
 
-
-#echo>input {
+#echo > input {
   border: none;
   border-bottom: 1px white solid;
   background-color: transparent;
@@ -89,10 +102,12 @@ button {
   width: 100%;
 }
 
-#echo>input:focus {
+
+#echo > input:focus {
   border-bottom-color: #6d85c6;
 }
 
-#echo>p {
+#echo > p {
   margin: 20px 0px 0px auto;
 }
+

@@ -3,15 +3,42 @@
   flex-direction: row;
 }
 
+#notes-selection-view {
+  padding: 1rem;
+}
+
+.note-list-item {
+  border-bottom: 1px solid var(--dutch-white);
+  list-style-type: none;
+  /* padding: 1rem;
+  background-color: aqua;
+  list-style-position: inside;
+  transition: all ease-in 150ms; */
+}
+
+.note-list-item:last-child {
+  border-bottom: 0px;
+}
+
+/* 
+.note-list-item:hover {
+  filter: brightness(100%);
+  backdrop-filter: brightness(150%);
+} */
+
+/* .note-list-item.selected {
+  
+} */
+
 .note-selector-button {
+  text-align: start;
+  width: 100%;
   border: none;
   background-color: transparent;
   filter: brightness(60%);
-  padding: 20px;
-  font-weight: 600;
-  color: var(--dutch-white);
-  cursor: pointer;
-  transition: all ease-in 150ms;
+  padding: 1rem 1.25rem;
+  /* padding-left: 0; */
+
 }
 
 .note-selector-button:hover {
@@ -41,7 +68,9 @@
   flex-grow: 1;
 }
 
-#note-edit>h1 {
+
+#note-edit > h1 {
+
   text-decoration: underline;
 }
 
@@ -50,9 +79,16 @@
   height: 100%;
   background-color: var(--smokey-black);
   color: var(--dutch-white);
+
+  white-space: pre-wrap;
 }
 
-#note-edit .note-markdown p>code {
+.note-markdown {
+  white-space: pre-wrap;
+}
+
+#note-edit .note-markdown p > code {
+
   backdrop-filter: brightness(190%);
   padding: 0.25rem;
   border-radius: 4px;
@@ -71,4 +107,6 @@
 
 #note-edit .note-markdown blockquote p {
   margin: 0;
+
 }
+
