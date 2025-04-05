@@ -1,3 +1,4 @@
+
 use super::Note;
 use chrono::Duration;
 use chrono::{TimeDelta, Utc};
@@ -73,6 +74,7 @@ pub fn NotesSelectionList(
             }
         }
     })
+
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -116,6 +118,7 @@ impl From<chrono::DateTime<Utc>> for TimePeriod {
         }
     }
 }
+
 
 pub fn generate_mock_notes() -> super::CachedNotes {
     let mock_info = vec![

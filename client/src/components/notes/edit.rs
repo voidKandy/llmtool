@@ -1,3 +1,4 @@
+
 use super::Note;
 use dioxus::prelude::*;
 
@@ -14,9 +15,11 @@ pub fn NoteEdit(current_note: ReadOnlySignal<Option<Note>>) -> Element {
 
     use_effect(move || {
         if is_edit() {
+
             document::eval("document.getElementById('edit-note-area').focus()");
         }
     });
+
 
     use_effect(move || {
         if let Some(note) = current_note() {
@@ -94,4 +97,5 @@ pub fn Markdown(props: MarkdownProps) -> Element {
             }
         },
     }
+
 }

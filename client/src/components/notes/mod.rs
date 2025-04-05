@@ -3,7 +3,9 @@ pub mod list;
 use chrono::{Duration, TimeDelta, Utc};
 use dioxus::prelude::*;
 use edit::NoteEdit;
+
 use list::NotesSelectionList;
+
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -43,14 +45,17 @@ impl Note {
 
 pub type CachedNotes = HashMap<u64, Note>;
 const NOTE_STYLES: Asset = asset!("/assets/styles/notes.css");
+
 const NOTES_STORAGE: &str = "notes";
 
 #[component]
 pub fn NotesViewComponent() -> Element {
+
     let cached_notes = dioxus_sdk::storage::new_persistent(NOTES_STORAGE, || {
         tracing::warn!("generating");
         list::generate_mock_notes()
     });
+
     let current_note_id: Signal<Option<u64>> = use_signal(|| None);
     let current_note: Memo<Option<Note>> =
         use_memo(move || current_note_id().and_then(|id| cached_notes().get(&id).cloned()));
@@ -66,10 +71,12 @@ pub fn NotesViewComponent() -> Element {
         );
     });
 
+
     rsx!(
         document::Link { rel: "stylesheet", href: NOTE_STYLES },
         div  {
             id: "notes-view",
+
             NotesSelectionList{
                 // categorization: None,
                 cloned_notes: cloned_titles(),
@@ -78,6 +85,7 @@ pub fn NotesViewComponent() -> Element {
             NoteEdit {
                 current_note: current_note
             }
+
         }
 
     )

@@ -1,4 +1,6 @@
+
 use std::collections::HashMap;
+
 
 use candle_core::{DType, Device, Tensor};
 use candle_nn::VarBuilder;
@@ -101,7 +103,7 @@ pub async fn load_model() -> Result<(), crate::Error> {
     let weights = fetch(&info.model_url).await;
     let tokenizer = fetch(&info.tokenizer_url).await;
     let config = fetch(&info.config_url).await;
-    //return model struct
+
     let mut model = Model::load(weights, tokenizer, config)?;
     tracing::warn!("model loaded!");
     let embeddings = model.get_embeddings(Params {
