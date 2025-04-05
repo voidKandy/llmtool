@@ -29,7 +29,7 @@ pub struct Note {
 }
 
 impl Note {
-    fn create(title: &str, content: &str) -> Self {
+    pub fn create(title: &str, content: &str) -> Self {
         let now = Utc::now();
         let mut hasher = DefaultHasher::new();
         content.hash(&mut hasher);
@@ -50,7 +50,6 @@ const NOTES_STORAGE: &str = "notes";
 
 #[component]
 pub fn NotesViewComponent() -> Element {
-
     let cached_notes = dioxus_sdk::storage::new_persistent(NOTES_STORAGE, || {
         tracing::warn!("generating");
         list::generate_mock_notes()
@@ -70,7 +69,6 @@ pub fn NotesViewComponent() -> Element {
                 .collect::<Vec<Note>>(),
         );
     });
-
 
     rsx!(
         document::Link { rel: "stylesheet", href: NOTE_STYLES },

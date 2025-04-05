@@ -1,6 +1,4 @@
-
 use std::collections::HashMap;
-
 
 use candle_core::{DType, Device, Tensor};
 use candle_nn::VarBuilder;
@@ -16,11 +14,6 @@ pub struct Model {
 pub struct Params {
     pub sentences: Vec<String>,
     pub normalize_embeddings: bool,
-}
-
-#[derive(serde::Serialize, serde::Deserialize)]
-struct Embeddings {
-    data: Vec<Vec<f32>>,
 }
 
 impl Model {
@@ -111,16 +104,17 @@ pub async fn load_model() -> Result<(), crate::Error> {
         normalize_embeddings: false,
     });
     tracing::warn!("embeddings: {embeddings:#?}");
+    tracing::warn!("embeddings size: {}", embeddings.unwrap()[0].len());
 
     Ok(())
 }
 
-struct ModelInfo {
-    model_url: String,
-    config_url: String,
-    tokenizer_url: String,
-    search_prefix: String,
-    document_prefix: String,
+pub struct ModelInfo {
+    pub model_url: String,
+    pub config_url: String,
+    pub tokenizer_url: String,
+    pub search_prefix: String,
+    pub document_prefix: String,
 }
 
 pub async fn fetch(url: &str) -> Vec<u8> {
@@ -138,7 +132,7 @@ pub async fn fetch(url: &str) -> Vec<u8> {
     res.bytes().await.unwrap().to_vec()
 }
 
-fn get_model_info(url: &str) -> ModelInfo {
+pub fn get_model_info(url: &str) -> ModelInfo {
     return ModelInfo {
         model_url: format!("{url}model.safetensors"),
         config_url: format!("{url}config.json"),
