@@ -1,7 +1,7 @@
 pub mod edit;
 pub mod list;
 use chrono::{Duration, TimeDelta, Utc};
-use dioxus::prelude::*;
+use dioxus::{html::li, prelude::*};
 use edit::NoteEdit;
 
 use list::NotesSelectionList;
@@ -45,7 +45,6 @@ impl Note {
 
 pub type CachedNotes = HashMap<u64, Note>;
 const NOTE_STYLES: Asset = asset!("/assets/styles/notes.css");
-
 const NOTES_STORAGE: &str = "notes";
 
 #[component]
@@ -54,15 +53,11 @@ pub fn NotesViewComponent() -> Element {
         tracing::warn!("generating");
         list::generate_mock_notes()
     });
-
-    let current_note_id: Signal<Option<u64>> = use_signal(|| None);
-    let current_note: Memo<Option<Note>> =
-        use_memo(move || current_note_id().and_then(|id| cached_notes().get(&id).cloned()));
-
-    let mut cloned_titles: Signal<Vec<Note>> = use_signal(|| vec![]);
+    let mut notes_list: Signal<Vec<Note>> = use_signal(|| vec![]);
+    let current_note: Signal<Option<Note>> = use_signal(|| None);
 
     use_effect(move || {
-        cloned_titles.set(
+        notes_list.set(
             cached_notes()
                 .iter()
                 .map(|(_, note)| note.to_owned())
@@ -70,21 +65,35 @@ pub fn NotesViewComponent() -> Element {
         );
     });
 
+    use_effect(move || {
+        if let Some(note) = current_note() {
+            let edited_list = notes_list
+                .peek()
+                .iter()
+                .map(|note_iter| {
+                    if note_iter.id == note.id {
+                        note.clone()
+                    } else {
+                        note_iter.clone()
+                    }
+                })
+                .collect::<Vec<Note>>();
+            notes_list.set(edited_list);
+        };
+    });
+
     rsx!(
         document::Link { rel: "stylesheet", href: NOTE_STYLES },
         div  {
             id: "notes-view",
-
             NotesSelectionList{
                 // categorization: None,
-                cloned_notes: cloned_titles(),
-                current_note_id: current_note_id,
+                notes: notes_list,
+                current_note: current_note,
             }
             NoteEdit {
                 current_note: current_note
             }
-
         }
-
     )
 }

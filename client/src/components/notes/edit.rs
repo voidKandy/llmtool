@@ -1,5 +1,5 @@
-
 use super::Note;
+use chrono::{DateTime, Utc};
 use dioxus::prelude::*;
 
 // #[derive(Props, Clone, Debug, PartialEq)]
@@ -7,28 +7,19 @@ use dioxus::prelude::*;
 //     note: Note,
 // }
 #[component]
-pub fn NoteEdit(current_note: ReadOnlySignal<Option<Note>>) -> Element {
+pub fn NoteEdit(current_note: Signal<Option<Note>>) -> Element {
     let mut is_edit = use_signal(|| false);
-    let mut note_title = use_signal(|| format!(""));
-    let mut note_content = use_signal(|| format!(""));
-    let content_html = use_memo(move || markdown::to_html(note_content().as_str()));
-
-    use_effect(move || {
-        if is_edit() {
-
-            document::eval("document.getElementById('edit-note-area').focus()");
+    let content_html = use_memo(move || {
+        if let Some(note) = current_note() {
+            return note.content;
+        } else {
+            return "".to_string();
         }
     });
 
-
     use_effect(move || {
-        if let Some(note) = current_note() {
-            tracing::info!("edit note: {note:?}");
-            note_title.set(note.title);
-            note_content.set(note.content);
-        } else {
-            note_title.set(format!(""));
-            note_content.set(format!(""));
+        if is_edit() {
+            document::eval("document.getElementById('edit-note-area').focus()");
         }
     });
 
@@ -36,11 +27,17 @@ pub fn NoteEdit(current_note: ReadOnlySignal<Option<Note>>) -> Element {
         if let Some(note) = current_note() {
             div {
                 id: "note-edit",
-                h1 { "{note_title}" },
+                h1 { "{note.title}" },
                 if is_edit() {
                     TextArea {
-                        content: note_content,
-                        oninput: move |event: FormEvent| note_content.set(event.value()),
+                        content: note.content,
+                        oninput: move |event: FormEvent| current_note.set(Some(Note{
+                            id: note.id,
+                            created: note.created,
+                            last_updated: Utc::now(),
+                            title: note.title.clone(),
+                            content: event.value()
+                        })),
                         onblur: move |_| is_edit.set(!is_edit())
                     }
                 } else {
@@ -73,7 +70,6 @@ pub fn TextArea(props: TextAreaProps) -> Element {
             value: "{props.content}",
             oninput: move |event| props.oninput.call(event),
             onblur: move |event| {
-                tracing::warn!("blurred textarea");
                 props.onblur.call(event)
             }
         }
@@ -92,10 +88,8 @@ pub fn Markdown(props: MarkdownProps) -> Element {
             class: "note-markdown",
             dangerous_inner_html: "{props.content_html}",
             ondoubleclick: move |event| {
-                tracing::warn!("double clicked body!");
                 props.ondoubleclick.call(event)
             }
         },
     }
-
 }

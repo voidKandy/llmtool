@@ -1,4 +1,3 @@
-
 use super::Note;
 use chrono::Duration;
 use chrono::{TimeDelta, Utc};
@@ -6,7 +5,7 @@ use dioxus::dioxus_core;
 use dioxus::html::p;
 use dioxus::prelude::*;
 use serde_json::error::Category;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 // #[derive(Props, Clone, Debug, PartialEq)]
 // struct NoteSelectionViewProps {
@@ -18,10 +17,17 @@ use std::collections::HashMap;
 pub fn NotesSelectionList(
     // props: NoteSelectionViewProps,
     categorization: Option<Categorization>,
-    cloned_notes: Vec<Note>,
-    current_note_id: Signal<Option<u64>>,
+    notes: ReadOnlySignal<Vec<Note>>,
+    current_note: Signal<Option<Note>>,
 ) -> Element {
     let mut categorized_notes_map = use_signal(|| HashMap::new());
+
+    let desc_keys: Vec<&'static str> = vec![
+        TimePeriod::Today.into(),
+        TimePeriod::LastWeek.into(),
+        TimePeriod::LastMonth.into(),
+        TimePeriod::Older.into(),
+    ];
 
     use_effect(move || {
         let mut map: HashMap<&'static str, Vec<Note>> = HashMap::new();
@@ -30,7 +36,7 @@ pub fn NotesSelectionList(
             Some(Categorization::Content) => {}
             Some(Categorization::Description) => {}
             None => {
-                cloned_notes.iter().for_each(|n| {
+                notes.iter().for_each(|n| {
                     let period = TimePeriod::from(n.last_updated);
                     let key: &'static str = period.into();
                     match map.get_mut(&key) {
@@ -47,34 +53,60 @@ pub fn NotesSelectionList(
 
     rsx!(
         ul {
-        id: "notes-selection-view",
-        for (category, notes) in categorized_notes_map().into_iter() {
-            div {
-                key: "{category}",
-                class: "categorized-notes-selection",
-                h1 {"{category}"},
-                ul {
-                    for note in notes.into_iter(){
-                        li {
-                            key: "note_{note.id}",
-                            class:"note-list-item",
-                            button {
-                                class: "note-selector-button",
-                                class: if current_note_id().is_some_and(|selected| selected == note.id) {
-                                    "selected"
-                                } else {
-                                    ""
+            id: "notes-selection-view",
+            for category in desc_keys {
+                if let Some(notes) = categorized_notes_map().get(category) {
+                    div {
+                        key: "{category}",
+                        class: "categorized-notes-selection",
+                        h1 {"{category}"},
+                        ul {
+                            for note in notes.to_owned().into_iter(){
+                                li {
+                                    key: "note_{note.id}",
+                                    class:"note-list-item",
+                                    button {
+                                        class: "note-selector-button",
+                                        class: if current_note().is_some_and(|selected| selected.id == note.id) {
+                                            "selected"
+                                        } else {
+                                            ""
+                                        },
+                                        onclick: move |_| current_note.set(Some(note.clone())),
+                                        "{note.title}",
+                                    }
                                 },
-                                onclick: move |_| current_note_id.set(Some(note.id)),
-                                "{note.title}",
                             }
-                        },
                         }
                     }
+                }
             }
-        }
+        // for (category, notes) in categorized_notes_map().into_iter() {
+        //     div {
+        //         key: "{category}",
+        //         class: "categorized-notes-selection",
+        //         h1 {"{category}"},
+        //         ul {
+        //             for note in notes.into_iter(){
+        //                 li {
+        //                     key: "note_{note.id}",
+        //                     class:"note-list-item",
+        //                     button {
+        //                         class: "note-selector-button",
+        //                         class: if current_note().is_some_and(|selected| selected.id == note.id) {
+        //                             "selected"
+        //                         } else {
+        //                             ""
+        //                         },
+        //                         onclick: move |_| current_note.set(Some(note.clone())),
+        //                         "{note.title}",
+        //                     }
+        //                 },
+        //                 }
+        //             }
+        //     }
+        // }
     })
-
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -118,7 +150,6 @@ impl From<chrono::DateTime<Utc>> for TimePeriod {
         }
     }
 }
-
 
 pub fn generate_mock_notes() -> super::CachedNotes {
     let mock_info = vec![

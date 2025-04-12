@@ -19,11 +19,11 @@ pub fn ModelLoader() -> Element {
 
             match resp {
                 Ok(_) => {
-                    tracing::info!("model loaded");
+                    // tracing::info!("model loaded");
                     // response.set("model loaded".into());
                 }
                 Err(err) => {
-                    tracing::info!("model loading failed with error: {err:?}");
+                    // tracing::info!("model loading failed with error: {err:?}");
                     model_error.set("failed to load model");
                     // response.set(format!("Request failed with error: {err:?}"));
                 }
